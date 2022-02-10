@@ -1,0 +1,172 @@
+Execute:
+> select * from passenger
+
++ ------------------- + ------------- + ----------- + ------------------ + --------------------- + ------------- + ------------- +
+| passenger_name      | cateogry      | gender      | boarding_city      | destination_city      | distance      | bus_type      |
++ ------------------- + ------------- + ----------- + ------------------ + --------------------- + ------------- + ------------- +
+| Sejal               | AC            | F           | Bengaluru          | Chennai               | 350           | Sleeper       |
+| Anmol               | Non-AC        | M           | Mumbai             | Hyderabad             | 700           | Sitting       |
+| Pallavi             | AC            | F           | Panaji             | Bengaluru             | 600           | Sleeper       |
+| Khusboo             | AC            | F           | Chennai            | Mumbai                | 1500          | Sleeper       |
+| Udit                | Non-AC        | M           | Trivandrum         | panaji                | 1000          | Sleeper       |
+| Ankur               | AC            | M           | Nagpur             | Hyderabad             | 500           | Sitting       |
+| Hemant              | Non-AC        | M           | panaji             | Mumbai                | 700           | Sleeper       |
+| Manish              | Non-AC        | M           | Hyderabad          | Bengaluru             | 500           | Sitting       |
+| Piyush              | AC            | M           | Pune               | Nagpur                | 700           | Sitting       |
++ ------------------- + ------------- + ----------- + ------------------ + --------------------- + ------------- + ------------- +
+9 rows
+
+Execute:
+> select * from price
+
++ ------------- + ------------- + ---------- +
+| bus_type      | distance      | price      |
++ ------------- + ------------- + ---------- +
+| Sleeper       | 350           | 770        |
+| Sleeper       | 500           | 1100       |
+| Sleeper       | 600           | 1320       |
+| Sleeper       | 700           | 1540       |
+| Sleeper       | 1000          | 2200       |
+| Sleeper       | 1200          | 2640       |
+| Sleeper       | 1500          | 2700       |
+| Sitting       | 500           | 620        |
+| Sitting       | 600           | 744        |
+| Sitting       | 700           | 868        |
+| Sitting       | 1000          | 1240       |
+| Sitting       | 1200          | 1488       |
+| Sitting       | 1500          | 1860       |
++ ------------- + ------------- + ---------- +
+13 rows
+
+Execute:
+> select gender, count(1) as count from passenger where distance >= 600 group by gender
+
++ ----------- + ---------- +
+| gender      | count      |
++ ----------- + ---------- +
+| M           | 4          |
+| F           | 2          |
++ ----------- + ---------- +
+2 rows
+
+Execute:
+> select min(price) as minimum_price from price where bus_type = 'Sleeper'
+
++ ------------------ +
+| minimum_price      |
++ ------------------ +
+| 770                |
++ ------------------ +
+1 rows
+
+Execute:
+> select passenger_name from passenger where passenger_name like 'S%'
+
++ ------------------- +
+| passenger_name      |
++ ------------------- +
+| Sejal               |
++ ------------------- +
+1 rows
+
+Execute:
+> select p.passenger_name as 'Passenger Name', p.boarding_city as 'Boarding City', p.destination_city as 'Destination City',
+ p.bus_type as 'Bus type', pr.price as 'Price'
+from passenger p
+left join price pr on p.bus_type = pr.bus_type and p.distance = pr.distance
+
++ ------------------- + ------------------ + --------------------- + ------------- + ---------- +
+| Passenger Name      | Boarding City      | Destination City      | Bus type      | Price      |
++ ------------------- + ------------------ + --------------------- + ------------- + ---------- +
+| Sejal               | Bengaluru          | Chennai               | Sleeper       | 770        |
+| Anmol               | Mumbai             | Hyderabad             | Sitting       | 868        |
+| Pallavi             | Panaji             | Bengaluru             | Sleeper       | 1320       |
+| Khusboo             | Chennai            | Mumbai                | Sleeper       | 2700       |
+| Udit                | Trivandrum         | panaji                | Sleeper       | 2200       |
+| Ankur               | Nagpur             | Hyderabad             | Sitting       | 620        |
+| Hemant              | panaji             | Mumbai                | Sleeper       | 1540       |
+| Manish              | Hyderabad          | Bengaluru             | Sitting       | 620        |
+| Piyush              | Pune               | Nagpur                | Sitting       | 868        |
++ ------------------- + ------------------ + --------------------- + ------------- + ---------- +
+9 rows
+
++ ------------------- + ------------------ + --------------------- + ------------- + ---------- +
+1 rows
+
+Execute:
+> select bus_type as 'Bus Type', price as 'Price' from price where distance = (
+select distance from passenger 
+where (boarding_city = 'Panaji' and destination_city = 'Bengaluru')
+or (boarding_city = 'Bengaluru' and destination_city = 'Panaji'))
+
++ ------------- + ---------- +
+| Bus Type      | Price      |
++ ------------- + ---------- +
+| Sleeper       | 1320       |
+| Sitting       | 744        |
++ ------------- + ---------- +
+2 rows
+
+Execute:
+> select distinct distance from passenger order by distance desc
+
++ ------------- +
+| distance      |
++ ------------- +
+| 1500          |
+| 1000          |
+| 700           |
+| 600           |
+| 500           |
+| 350           |
++ ------------- +
+6 rows
+
+Execute:
+> SELECT passenger_name as 'Passenger Name', distance * 100 / pr.total as '% distance travelled'
+FROM passenger
+CROSS JOIN (SELECT SUM(distance) AS total FROM passenger) pr
+
++ ------------------- + ------------------------- +
+| Passenger Name      | % distance travelled      |
++ ------------------- + ------------------------- +
+| Sejal               | 5.3435                    |
+| Anmol               | 10.6870                   |
+| Pallavi             | 9.1603                    |
+| Khusboo             | 22.9008                   |
+| Udit                | 15.2672                   |
+| Ankur               | 7.6336                    |
+| Hemant              | 10.6870                   |
+| Manish              | 7.6336                    |
+| Piyush              | 10.6870                   |
++ ------------------- + ------------------------- +
+9 rows
+
+Execute:
+> select bus_type, distance, price,
+case  
+	when price>1000 then 'Expensive'
+    when price>500 then 'Average Cost'
+    else 'Cheap'
+end category
+from price
+
++ ------------- + ------------- + ---------- + ------------- +
+| bus_type      | distance      | price      | category      |
++ ------------- + ------------- + ---------- + ------------- +
+| Sleeper       | 350           | 770        | Average Cost  |
+| Sleeper       | 500           | 1100       | Expensive     |
+| Sleeper       | 600           | 1320       | Expensive     |
+| Sleeper       | 700           | 1540       | Expensive     |
+| Sleeper       | 1000          | 2200       | Expensive     |
+| Sleeper       | 1200          | 2640       | Expensive     |
+| Sleeper       | 1500          | 2700       | Expensive     |
+| Sitting       | 500           | 620        | Average Cost  |
+| Sitting       | 600           | 744        | Average Cost  |
+| Sitting       | 700           | 868        | Average Cost  |
+| Sitting       | 1000          | 1240       | Expensive     |
+| Sitting       | 1200          | 1488       | Expensive     |
+| Sitting       | 1500          | 1860       | Expensive     |
++ ------------- + ------------- + ---------- + ------------- +
+13 rows
+
